@@ -40,13 +40,17 @@ class Transaction(BaseModel):
     receiver_id: str
     invoice_id: str
     valuation_id: Optional[str] = None
+    sender_reputation: Optional[float] = None
+    receiver_reputation: Optional[float] = None
 
-class ReputationRecord(BaseModel):
+
+class Reputation(BaseModel):
     """Represents a reputation score at a point in time."""
     entity_id: str
     score: float
     timestamp: datetime
     reason: str
+
 
 class Block(BaseModel):
     """Represents a block in the blockchain."""

@@ -1,22 +1,43 @@
 import pytest
-from src.blockchain import Blockchain
+from src.reputation import ReputationSystem, DEFAULT_REPUTATION_SCORE
 from src.models import Transaction
-from src.reputation import ReputationSystem
 from datetime import datetime
 
 @pytest.fixture
-def blockchain_for_reputation():
-    bc = Blockchain()
-    tx1 = Transaction(transaction_id="tx1", timestamp=datetime.now(), amount=100, currency="USD", payment_method="cc", country="USA", sender_id="userA", receiver_id="userB", invoice_id="inv1")
-    tx2 = Transaction(transaction_id="tx2", timestamp=datetime.now(), amount=200, currency="USD", payment_method="wire", country="USA", sender_id="userA", receiver_id="blacklisted", invoice_id="inv2")
-    bc.add_block([tx1, tx2], [])
-    return bc
+def reputation_system():
+    return ReputationSystem()
 
-def test_reputation_score_calculation(blockchain_for_reputation: Blockchain):
-    blacklisted_entities = {"blacklisted"}
-    reputation_system = ReputationSystem(blockchain_for_reputation, blacklisted_entities)
-    scores = reputation_system.calculate_reputation()
+def test_get_reputation_default(reputation_system: ReputationSystem):
+    assert reputation_system.get_reputation("new_entity") == DEFAULT_REPUTATION_SCORE
 
-    assert scores["userA"] == 2
-    assert scores["userB"] == 1
-    assert scores["blacklisted"] == 101
+def test_update_and_get_reputation(reputation_system: ReputationSystem):
+    reputation_system.update_reputation("entity1", 0.9, "Good transaction history")
+    assert reputation_system.get_reputation("entity1") == 0.9
+
+def test_update_reputation_invalid_score(reputation_system: ReputationSystem):
+    with pytest.raises(ValueError):
+        reputation_system.update_reputation("entity2", 1.1, "Invalid score")
+    with pytest.raises(ValueError):
+        reputation_system.update_reputation("entity3", -0.1, "Invalid score")
+
+def test_get_all_reputations(reputation_system: ReputationSystem):
+    reputation_system.update_reputation("entity1", 0.9, "Good transaction history")
+    reputation_system.update_reputation("entity2", 0.2, "Suspicious activity")
+    scores = reputation_system.get_all_reputations()
+    assert scores == {"entity1": 0.9, "entity2": 0.2}
+
+def test_update_reputations_from_alerts(reputation_system: ReputationSystem):
+    tx1 = Transaction(transaction_id="tx1", timestamp=datetime.now(), amount=100, currency="USD", payment_method="cc", country="USA", sender_id="sender1", receiver_id="receiver1", invoice_id="inv1")
+    tx2 = Transaction(transaction_id="tx2", timestamp=datetime.now(), amount=200, currency="USD", payment_method="cc", country="USA", sender_id="sender2", receiver_id="receiver2", invoice_id="inv2")
+    transactions = [tx1, tx2]
+    aml_alerts = {"tx2": ["Suspicious activity detected"]}
+
+    reputation_system.update_reputations_from_alerts(transactions, aml_alerts)
+
+    # sender1 and receiver1 should have increased reputation
+    assert reputation_system.get_reputation("sender1") > DEFAULT_REPUTATION_SCORE
+    assert reputation_system.get_reputation("receiver1") > DEFAULT_REPUTATION_SCORE
+
+    # sender2 and receiver2 should have decreased reputation
+    assert reputation_system.get_reputation("sender2") < DEFAULT_REPUTATION_SCORE
+    assert reputation_system.get_reputation("receiver2") < DEFAULT_REPUTATION_SCORE

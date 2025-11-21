@@ -3,10 +3,12 @@ from datetime import datetime
 import hashlib
 import json
 from .models import Block, Transaction, AssetValuation
+from .reputation import ReputationSystem
 
 class Blockchain:
-    def __init__(self):
+    def __init__(self, reputation_system: ReputationSystem):
         self.chain: List[Block] = []
+        self.reputation_system = reputation_system
         self.create_genesis_block()
 
     def create_genesis_block(self):
@@ -27,6 +29,12 @@ class Blockchain:
 
     def add_block(self, transactions: List[Transaction], valuations: List[AssetValuation]) -> Block:
         """Adds a new block to the blockchain."""
+
+        # Add reputation scores to transactions before adding them to the block
+        for tx in transactions:
+            tx.sender_reputation = self.reputation_system.get_reputation(tx.sender_id)
+            tx.receiver_reputation = self.reputation_system.get_reputation(tx.receiver_id)
+
         previous_block = self.get_last_block()
         new_block = Block(
             index=previous_block.index + 1,

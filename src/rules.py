@@ -2,11 +2,13 @@ from typing import List, Dict, Set
 from datetime import timedelta
 from .models import Transaction, AssetValuation
 from .blockchain import Blockchain
+from .reputation import ReputationSystem
 
 class AMLRules:
-    def __init__(self, blockchain: Blockchain, blacklisted_entities: Set[str]):
+    def __init__(self, blockchain: Blockchain, blacklisted_entities: Set[str], reputation_system: ReputationSystem):
         self.blockchain = blockchain
         self.blacklisted_entities = blacklisted_entities
+        self.reputation_system = reputation_system
 
     def check_transaction(self, transaction: Transaction) -> List[str]:
         """Checks a single transaction against AML rules."""
@@ -26,6 +28,12 @@ class AMLRules:
         # Rule 2: Transaction with blacklisted entity
         if transaction.sender_id in self.blacklisted_entities or transaction.receiver_id in self.blacklisted_entities:
             alerts.append(f"Transaction {transaction.transaction_id} involves a blacklisted entity.")
+
+        # Rule 3: Low reputation score
+        if transaction.sender_reputation is not None and transaction.sender_reputation < 0.2:
+            alerts.append(f"Sender {transaction.sender_id} has a low reputation score.")
+        if transaction.receiver_reputation is not None and transaction.receiver_reputation < 0.2:
+            alerts.append(f"Receiver {transaction.receiver_id} has a low reputation score.")
 
         return alerts
 
