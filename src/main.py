@@ -26,7 +26,8 @@ def generate_suspicious_raw_transactions():
 
 def main():
     # 1. Setup
-    blockchain = Blockchain()
+    reputation_system = ReputationSystem()
+    blockchain = Blockchain(reputation_system)
     alert_system = AlertSystem()
     blacklisted_entities = {'blacklisted_user'}
 
@@ -36,6 +37,7 @@ def main():
 
     good_transactions, good_valuations, good_entities, good_invoices = ingest_data(good_raw_data)
     suspicious_transactions, suspicious_valuations, suspicious_entities, suspicious_invoices = ingest_data(suspicious_raw_data)
+    all_transactions = good_transactions + suspicious_transactions
 
     # 3. Generate valuations
     good_valuations_data = generate_synthetic_valuations(good_transactions)
@@ -50,11 +52,11 @@ def main():
     blockchain.add_block(suspicious_transactions, suspicious_valuations)
 
     # 5. Run AML and Reputation
-    aml_rules = AMLRules(blockchain, blacklisted_entities)
+    aml_rules = AMLRules(blockchain, blacklisted_entities, reputation_system)
     aml_alerts = aml_rules.check_all_transactions()
+    reputation_system.update_reputations_from_alerts(all_transactions, aml_alerts)
 
-    reputation_system = ReputationSystem(blockchain, blacklisted_entities)
-    reputation_scores = reputation_system.calculate_reputation()
+    reputation_scores = reputation_system.get_all_reputations()
 
     # 6. Generate Alerts
     for tx_id, alerts in aml_alerts.items():
