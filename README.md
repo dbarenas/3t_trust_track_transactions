@@ -24,7 +24,8 @@ All analytical tasks, including AML checks and reputation scoring, are performed
   - Transactions involving blacklisted entities.
   - Transaction splitting (Fraccionamiento) to circumvent value thresholds.
   - Circular fund flows (e.g., A -> B -> C -> A).
-- **Reputation System:** A scoring system to assess the risk profile of entities based on their transaction history.
+  - Transactions involving entities with low reputation scores.
+- **Dynamic Reputation System:** A stateful, real-time scoring system that assesses the trustworthiness of entities. An entity's reputation is snapshotted onto each transaction and is dynamically updated based on AML rule outcomes. Clean transactions increase reputation, while flagged transactions decrease it.
 - **Alerting System:** A mechanism to generate alerts when suspicious activities are detected.
 - **Comprehensive Test Suite:** A suite of tests written with `pytest` to ensure the correctness and robustness of the system.
 
@@ -46,7 +47,6 @@ All analytical tasks, including AML checks and reputation scoring, are performed
     ```bash
     pip install -r requirements.txt
     ```
-    *(Note: You will need to create a `requirements.txt` file from the installed packages: `pip freeze > requirements.txt`)*
 
 ## Usage
 
@@ -59,9 +59,12 @@ python -m src.main
 The script will:
 1.  Generate synthetic "good" and "suspicious" transaction data.
 2.  Process the data through the ingestion pipeline.
-3.  Build the blockchain with the transactions and valuations.
-4.  Run the AML and reputation analysis.
-5.  Print a summary of the results, including the blockchain's validity, any generated AML alerts, and the calculated reputation scores.
+3.  Build the blockchain with the transactions and valuations, snapshotting entity reputations into each transaction.
+4.  Run the AML analysis on all transactions in the blockchain.
+5.  Update entity reputations based on the outcomes of the AML checks.
+6.  Print a summary of the results, including the blockchain's validity, any generated AML alerts, and the final reputation scores.
+
+The output will show how reputation scores evolve. For example, entities involved only in "good" transactions will see their scores increase from the default of 0.5, while entities involved in "suspicious" transactions will see their scores decrease.
 
 ## Testing
 
