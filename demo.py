@@ -6,6 +6,7 @@ focusing on the dynamic reputation system.
 """
 from datetime import datetime
 import uuid
+import pandas as pd
 
 # Import system components
 from src.ingestion import ingest_data
@@ -78,9 +79,15 @@ def main():
 
     if aml_alerts:
         print("\n--- Generated AML Alerts ---")
+        alerts_list = []
         for tx_id, alerts in aml_alerts.items():
             for alert in alerts:
                 print(f"  Alert for {tx_id}: {alert}")
+                alerts_list.append({'transaction_id': tx_id, 'alert': alert})
+
+        alerts_df = pd.DataFrame(alerts_list)
+        alerts_df.to_csv('aml_alerts.csv', index=False)
+        print("\nAML alerts have been saved to aml_alerts.csv")
     else:
         print("No AML alerts were generated.")
 
@@ -93,6 +100,7 @@ def main():
     print_header("Final Reputation Scores")
     final_scores = reputation_system.get_all_reputations()
 
+    scores_list = []
     print(f"{'Entity':<20} | {'Score':<10} | {'Change'}")
     print("-"*45)
     for entity, score in sorted(final_scores.items()):
@@ -104,6 +112,11 @@ def main():
         else:
             change = "Unchanged"
         print(f"{entity:<20} | {score:<10.2f} | {change}")
+        scores_list.append({'entity': entity, 'score': score, 'change': change})
+
+    scores_df = pd.DataFrame(scores_list)
+    scores_df.to_csv('reputation_scores.csv', index=False)
+    print("\nFinal reputation scores have been saved to reputation_scores.csv")
 
 if __name__ == "__main__":
     main()
