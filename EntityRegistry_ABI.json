@@ -1,0 +1,53 @@
+[
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "entityId",
+                "type": "string"
+            }
+        ],
+        "name": "registerEntity",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "entityId",
+                "type": "string"
+            },
+            {
+                "name": "newReputation",
+                "type": "int256"
+            }
+        ],
+        "name": "updateReputation",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "entityId",
+                "type": "string"
+            }
+        ],
+        "name": "getReputation",
+        "outputs": [
+            {
+                "name": "",
+                "type": "int256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    }
+]

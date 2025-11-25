@@ -1,0 +1,43 @@
+[
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "merkleRoot",
+                "type": "bytes32"
+            }
+        ],
+        "name": "commitBlock",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "blockNumber",
+                "type": "uint256"
+            },
+            {
+                "name": "leaf",
+                "type": "bytes32"
+            },
+            {
+                "name": "proof",
+                "type": "bytes32[]"
+            }
+        ],
+        "name": "verifyLeafInBlock",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
